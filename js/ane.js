@@ -18,8 +18,8 @@ aneObj.prototype.init = function(){
 aneObj.prototype.draw = function(){
 
 	ctx2.save();
-	ctx2.globalAlpha = 0.1;
-	ctx2.lineWidth = 10;
+	ctx2.globalAlpha = 0.6;
+	ctx2.lineWidth = 20;
 	ctx2.lineCap = "round";
 	ctx2.strokeStyle = "#3B154E";
 	for (var i = 0; i < this.num; i++) {

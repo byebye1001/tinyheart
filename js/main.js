@@ -14,13 +14,14 @@ var bgPic = new Image();
 
 var ane;
 
+var fruits;
 
 document.body.onload = game;//加载完body，把game作为所有js脚本的入口
 
 function game(){
 	init();
-	// lastTime = Date.now();
-	// deltaTime = 0;
+	lastTime = Date.now();
+	deltaTime = 0;
 	gameloop();
 }
 
@@ -41,6 +42,9 @@ function init(){
 	ane = new aneObj();
 	ane.init();
 
+	fruits = new fruitObj();
+	fruits.init();
+
 	drawBackground();
 	
 }
@@ -51,10 +55,11 @@ function gameloop(){
 	//当前绘制完成后根据机器选择相隔多长时间绘制下一帧
 	//fps
 	requestAnimFrame(gameloop);
-
-	// var now = Date.now();
-	// deltaTime = now - lastTime;
-	// lastTime = now;
+//为什么要画一遍背景才可以使果实不呈现直线轨迹，盖住上一帧的痕迹
+	ctx2.drawImage(bgPic,0,0);
+	var now = Date.now();
+	deltaTime = now - lastTime;
+	lastTime = now;
 	ane.draw();
-
+	fruits.draw();
 }
