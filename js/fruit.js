@@ -1,9 +1,10 @@
-var fruitObj = function(){
+var fruitObj = function() {
 	this.alive = [];
 	this.x = [];
 	this.y = [];
-	this.l = [];//图片长度
-	this.spd = [];//成长速度，和上浮速度
+	this.l = []; //图片长度
+	this.spd = []; //成长速度，和上浮速度
+	this.fruitType = [];
 	this.orange = new Image();
 	this.blue = new Image();
 }
@@ -11,15 +12,17 @@ var fruitObj = function(){
 //果实池，数量为30
 fruitObj.prototype.num = 30;
 //初始化
-fruitObj.prototype.init = function(){
-	for(var i = 0;i < this.num;i++){
-		this.alive[i] = true;
+fruitObj.prototype.init = function() {
+	for (var i = 0; i < this.num; i++) {
+		this.alive[i] = false;
 		this.x[i] = 0;
 		this.y[i] = 0;
 		this.l[i] = 0;
-		this.spd[i] = Math.random() * 0.01 + 0.005;
+		//spd为什么要这样设置
+		this.spd[i] = Math.random() * 0.017 + 0.003;
+		this.fruitType[i] = "";
 		//让所有果实都找到对应位置
-		this.bron(i);
+		//this.bron(i);
 	}
 	//加载果实图片
 	this.orange.src = "./src/fruit.png";
@@ -27,35 +30,44 @@ fruitObj.prototype.init = function(){
 
 }
 
-fruitObj.prototype.draw = function(){
-	for(var i = 0;i < this.num;i++){
+fruitObj.prototype.draw = function() {
+	for (var i = 0; i < this.num; i++) {
 		//画果实
 		//找到一个海葵,找到海葵坐标
 		//长大
 		//向上漂浮
-		if(this.alive[i]){
-					if(this.l[i] <= 14){
-			this.l[i] += this.spd[i] * deltaTime;//让生长速度平滑
-		}else{
-			this.y[i] -= this.spd[i] * 7 * deltaTime;
-		}
-//drawImage(image, sourceX, sourceY, sourceWidth, sourceHeight,destX, destY, destWidth, destHeight)
-//sourceX, sourceY   图像将要被绘制的区域的左上角。这些整数参数用图像像素来度量
-//sourceWidth, sourceHeight	图像所要绘制区域的大小，用图像像素表示
-//destX, destY	所要绘制的图像区域的左上角的画布坐标。
-//destWidth, destHeight	图像区域所要绘制的画布大小
-		ctx2.drawImage(this.orange,this.x[i] - this.l[i] * 0.5,this.y[i] - this.l[i] * 0.5,this.l[i],this.l[i]);
-		
-		if(this.y[i] < -10){
-			this.alive = false;
-		}
+		if (this.alive[i]) {
+
+			if(this.fruitType[i] == "blue"){
+				var pic = this.blue;
+			}else{
+				var pic = this.orange;
+			}
+
+
+			if (this.l[i] <= 14) {
+				this.l[i] += this.spd[i] * deltaTime; //让生长速度平滑
+			} else {
+				this.y[i] -= this.spd[i] * 7 * deltaTime;
+			}
+			//drawImage(image, sourceX, sourceY, sourceWidth, sourceHeight,destX, destY, destWidth, destHeight)
+			//sourceX, sourceY   图像将要被绘制的区域的左上角。这些整数参数用图像像素来度量
+			//sourceWidth, sourceHeight	图像所要绘制区域的大小，用图像像素表示
+			//destX, destY	所要绘制的图像区域的左上角的画布坐标。
+			//destWidth, destHeight	图像区域所要绘制的画布大小
+			ctx2.drawImage(pic, this.x[i] - this.l[i] * 0.5, this.y[i] - this.l[i] * 0.5, this.l[i], this.l[i]);
+
+			if (this.y[i] < 10) {
+				//这里的alive漏了i的话，结果是最上面那个y坐标符合条件时屏幕上的所有果实都会消失
+				this.alive[i] = false;
+			}
 		}
 
 
 	}
 }
 
-fruitObj.prototype.bron = function(i){
+fruitObj.prototype.born = function(i) {
 	//Math.floor(x)返回<=x的最大整数
 	//找到对应海葵
 	var aneId = Math.floor(Math.random() * ane.num);
@@ -64,15 +76,52 @@ fruitObj.prototype.bron = function(i){
 	this.x[i] = ane.x[aneId];
 	this.y[i] = canHeight - ane.len[aneId];
 	this.l[i] = 0;
+	this.alive[i] = true;
+	var ran = Math.random();
+	if(ran < 0.2){
+		this.fruitType[i] = "blue";
+	}else{
+		this.fruitType[i] = "orange";
+	}
+	
 }
 
 
-fruitObj.prototype.uodate = function(){
-	var num = 0;
-	//统计当前屏幕活跃状态的果实数量
-	for(var i = 0;i < this.num;i ++){
-		if(this.alive[i]){
-			num++;
+function sendFruit() {
+
+	for (var i = 0; i < fruits.num; i++) {
+		if (!fruits.alive[i]) {
+			fruits.born(i);
+			return;
 		}
+	}
+}
+
+
+//这个函数没有用到(2017.7.7)
+fruitObj.prototype.update = function() {
+	var num = 0;
+
+	for (var i = 0; i < fruits.num; i++) {
+		if (!fruits.alive[i]) {
+			fruits.born(i);
+			return;
+		}
+	}
+}
+
+//判断屏幕上alive的果实,统计数量
+function fruitMonitor() {
+
+	var num = 0;
+	for (var i = 0; i < fruits.num; i++) {
+		//统计alive的果实数量
+		if (fruits.alive[i])
+			num++;
+	}
+	if (num < 15) {
+		//数量少于15个发出一个果实
+		sendFruit();
+		return;
 	}
 }
