@@ -21,9 +21,13 @@ var mom;
 var mx;
 var my;
 
+var data;
+
+var wave;
+var halo;
+var dust;
 
 document.body.onload = game; //加载完body，把game作为所有js脚本的入口
-
 function game() {
 	init();
 	lastTime = Date.now();
@@ -42,7 +46,7 @@ function init() {
 	ctx2 = can2.getContext('2d');
 
 	//鼠标移动时候可以被监听到
-	can1.addEventListener('mousemove',onMouseMove,false);
+	can1.addEventListener('mousemove', onMouseMove, false);
 
 	bgPic.src = "./src/background.jpg";
 	canWidth = can1.width;
@@ -56,12 +60,27 @@ function init() {
 
 	mom = new momObj();
 	mom.init();
-	
+
+	baby = new babyObj();
+	baby.init();
+
 	mx = canWidth * 0.5;
 	my = canHeight * 0.5;
 
 	drawBackground();
 
+	data = new dataObj();
+	ctx1.font = "30px Verdana";
+	ctx1.textAlign = "center";
+
+	wave = new waveObj();
+	wave.init();
+
+	halo = new haloObj();
+	halo.init();
+
+	dust=new dustObj();
+	dust.init();
 }
 
 //游戏循环
@@ -75,19 +94,34 @@ function gameloop() {
 	var now = Date.now();
 	deltaTime = now - lastTime;
 	lastTime = now;
+	if (deltaTime > 40) {
+		deltaTime = 40;
+	}
 
 	ane.draw();
 	fruitMonitor();
 	fruits.draw();
 	//清除前一帧
-	ctx1.clearRect(0,0,canWidth,canHeight);
+	ctx1.clearRect(0, 0, canWidth, canHeight);
 	mom.draw();
+	baby.draw();
+	momFruitCollision();
+	momBabyCollision();
+
+	data.draw();
+	wave.draw();
+	halo.draw();
+	dust.draw();
+
 }
 
-function onMouseMove(e){
-	if(e.offSetX || e.layerX){
-		//获取鼠标坐标
-		mx = e.offSetX == undefined?e.layerX:e.offSetX;
-		my = e.offSetY == undefined?e.layerY:e.offSetY;
+function onMouseMove(e) {
+	if (!data.gameOver) {
+		if (e.offSetX || e.layerX) {
+			//获取鼠标坐标
+			mx = e.offSetX == undefined ? e.layerX : e.offSetX;
+			my = e.offSetY == undefined ? e.layerY : e.offSetY;
+		}
 	}
+
 }
